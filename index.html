@@ -34,7 +34,7 @@
       overflow:hidden;
     }
     .card{
-      width:min(560px, 96vw);
+      width:min(640px, 96vw);
       background:var(--card);
       border:1px solid var(--border);
       border-radius:var(--radius);
@@ -42,6 +42,7 @@
       box-shadow:var(--shadow);
       backdrop-filter: blur(10px);
       text-align:center;
+      position:relative;
     }
     h1{
       margin:0 0 10px;
@@ -49,19 +50,26 @@
       letter-spacing:-0.02em;
     }
     p{
-      margin:0 0 20px;
+      margin:0 0 18px;
       color:var(--muted);
       line-height:1.5;
       font-size: 15.5px;
     }
-    .btnrow{
+
+    .arena{
+      position:relative;
+      margin: 18px auto 0;
+      width: min(560px, 92vw);
+      height: 170px;
+      border-radius: 18px;
+      border: 1px dashed rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.03);
       display:flex;
-      gap:12px;
-      justify-content:center;
       align-items:center;
-      flex-wrap:wrap;
-      margin-top:14px;
+      justify-content:center;
+      overflow:hidden;
     }
+
     button{
       border:0;
       border-radius:16px;
@@ -69,43 +77,62 @@
       font-size:16px;
       cursor:pointer;
       transition: transform .15s ease, opacity .15s ease, filter .15s ease;
-      min-width:140px;
+      min-width:150px;
       user-select:none;
+      touch-action: manipulation;
     }
     #yesBtn{
       background: linear-gradient(135deg, rgba(34,197,94,0.95), rgba(16,185,129,0.95));
       color:#05210f;
-      font-weight:700;
+      font-weight:800;
       box-shadow: 0 12px 30px rgba(34,197,94,0.18);
+      z-index:2;
     }
     #yesBtn:hover{ transform: translateY(-1px) scale(1.01); filter:brightness(1.02); }
+
     #noBtn{
+      position:absolute;
+      left: 60%;
+      top: 55%;
+      transform: translate(-50%,-50%);
       background: var(--no);
       color: var(--text);
       border: 1px solid rgba(255,255,255,0.18);
+      z-index:3;
+      will-change: left, top, transform;
     }
-    #noBtn:hover{ transform: translateY(-1px); }
 
     .hint{
       margin-top:14px;
       font-size:13px;
-      color: rgba(255,255,255,0.55);
+      color: rgba(255,255,255,0.62);
       min-height: 18px;
     }
+
+    .success{
+      display:none;
+      margin-top:16px;
+      padding:14px 14px;
+      border-radius:16px;
+      border:1px solid rgba(34,197,94,0.35);
+      background: rgba(34,197,94,0.10);
+      color: rgba(220,255,235,0.95);
+    }
+    .success b{ color: rgba(220,255,235,1); }
 
     /* modal */
     .overlay{
       position:fixed;
       inset:0;
-      background: rgba(0,0,0,0.55);
+      background: rgba(0,0,0,0.60);
       display:none;
       place-items:center;
       padding:18px;
       z-index:50;
     }
     .modal{
-      width:min(720px, 96vw);
-      background: rgba(20,18,40,0.92);
+      width:min(820px, 96vw);
+      background: rgba(20,18,40,0.94);
       border:1px solid rgba(255,255,255,0.16);
       border-radius: 18px;
       box-shadow: var(--shadow);
@@ -127,243 +154,4 @@
       min-width:auto;
       border-radius:12px;
       cursor:pointer;
-    }
-    .modalBody{
-      padding:14px 16px;
-    }
-    .tcBox{
-      height: 240px;
-      overflow:auto;
-      padding:12px;
-      border-radius:14px;
-      border:1px solid rgba(255,255,255,0.12);
-      background: rgba(255,255,255,0.04);
-      color: rgba(255,255,255,0.78);
-      font-size: 13.5px;
-      line-height: 1.55;
-    }
-    .modalFooter{
-      display:flex;
-      gap:10px;
-      justify-content:flex-end;
-      padding:14px 16px;
-      border-top:1px solid rgba(255,255,255,0.12);
-    }
-    .secondary{
-      background: rgba(255,255,255,0.10);
-      color: rgba(255,255,255,0.85);
-      border:1px solid rgba(255,255,255,0.14);
-      min-width:auto;
-    }
-    .primary{
-      background: rgba(34,197,94,0.92);
-      color:#05210f;
-      font-weight:800;
-      min-width:auto;
-    }
-    .primary:disabled{
-      opacity:0.5;
-      cursor:not-allowed;
-      filter:grayscale(1);
-    }
-
-    /* success screen */
-    .success{
-      display:none;
-      margin-top:16px;
-      padding:14px 14px;
-      border-radius:16px;
-      border:1px solid rgba(34,197,94,0.35);
-      background: rgba(34,197,94,0.10);
-      color: rgba(220,255,235,0.95);
-    }
-    .success b{ color: rgba(220,255,235,1); }
-
-    /* tiny floating hearts (subtle) */
-    .heart{
-      position:fixed;
-      bottom:-20px;
-      font-size:16px;
-      opacity:0.85;
-      animation: floatUp 5.5s linear forwards;
-      pointer-events:none;
-      filter: drop-shadow(0 8px 10px rgba(0,0,0,0.25));
-    }
-    @keyframes floatUp{
-      from{ transform: translateY(0) translateX(0) scale(1); opacity:0.0; }
-      10%{ opacity:0.85; }
-      to{ transform: translateY(-110vh) translateX(var(--dx)) scale(1.15); opacity:0; }
-    }
-  </style>
-</head>
-<body>
-  <div class="card" id="card">
-    <h1>Will you be my Valentine? 💘</h1>
-    <p id="subtitle">Choose wisely. There are… consequences.</p>
-
-    <div class="btnrow">
-      <button id="yesBtn">Yes 💚</button>
-      <button id="noBtn">No 😐</button>
-    </div>
-
-    <div class="hint" id="hint"></div>
-
-    <div class="success" id="success">
-      <div style="font-size:18px; margin-bottom:6px;">Yessss! 🎉</div>
-      <div>Congratulations. You have unlocked: <b>Unlimited hugs</b> + <b>one date of your choice</b>.</div>
-      <div style="margin-top:8px; color: rgba(220,255,235,0.85); font-size:13px;">
-        (Screenshot this as proof 🧾)
-      </div>
-    </div>
-  </div>
-
-  <!-- Terms modal -->
-  <div class="overlay" id="overlay" role="dialog" aria-modal="true">
-    <div class="modal">
-      <div class="modalHeader">
-        <strong>Valentine Terms & Conditions (37 pages)</strong>
-        <button class="closeX" id="closeModal" aria-label="Close">✕</button>
-      </div>
-
-      <div class="modalBody">
-        <div class="tcBox" id="tcBox">
-          <p><b>Important:</b> To select “No”, you must read and agree to all terms below.</p>
-          <p>1. “No” is defined as “Yes”, but with extra steps.</p>
-          <p>2. Attempting “No” may cause spontaneous affection, smiling, and/or plans being made for dinner.</p>
-          <p>3. User acknowledges that the creator is extremely cute and will continue being cute regardless of button choice.</p>
-          <p>4. Any clicks on “No” will be interpreted as “I’m joking”.</p>
-          <p>5. You agree to a minimum of one hug (or equivalent cuddle credits) upon confirmation.</p>
-          <p>6. You agree that you are the best thing that happened to me.</p>
-          <p>7. You agree that this website is legally binding in the Court of Love™.</p>
-          <p>8. You agree that scrolling is mandatory.</p>
-          <p>9. You agree that the “No” option may shrink due to supply chain issues.</p>
-          <p>10. You agree to more dates, more laughs, and more us.</p>
-          <p style="margin-top:12px; opacity:0.75;">
-            Keep scrolling. There are definitely 37 pages. Totally.
-          </p>
-          <div style="height:900px;"></div>
-          <p><b>End of Terms.</b> You may now attempt “No” (good luck).</p>
-        </div>
-
-        <p id="scrollNote" style="margin:10px 0 0; font-size:12.5px; color:rgba(255,255,255,0.65);">
-          Scroll to the bottom to enable “I Agree”.
-        </p>
-      </div>
-
-      <div class="modalFooter">
-        <button class="secondary" id="cancelModal">Cancel</button>
-        <button class="primary" id="agreeBtn" disabled>I Agree</button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    const yesBtn = document.getElementById('yesBtn');
-    const noBtn = document.getElementById('noBtn');
-    const hint = document.getElementById('hint');
-    const success = document.getElementById('success');
-    const subtitle = document.getElementById('subtitle');
-
-    const overlay = document.getElementById('overlay');
-    const closeModal = document.getElementById('closeModal');
-    const cancelModal = document.getElementById('cancelModal');
-    const agreeBtn = document.getElementById('agreeBtn');
-    const tcBox = document.getElementById('tcBox');
-    const scrollNote = document.getElementById('scrollNote');
-
-    let noAttempts = 0;
-
-    const noLines = [
-      "Are you sure? 🙂",
-      "That seems… suspicious.",
-      "Interesting choice. Wrong, but interesting.",
-      "Okay but like… think again.",
-      "No is currently out of stock.",
-      "No has been discontinued due to being mean."
-    ];
-
-    function spawnHeart(){
-      const h = document.createElement('div');
-      h.className = 'heart';
-      h.textContent = Math.random() > 0.5 ? '💗' : '💘';
-      h.style.left = Math.round(Math.random()*100) + 'vw';
-      h.style.setProperty('--dx', (Math.random()*160 - 80) + 'px');
-      h.style.fontSize = (14 + Math.random()*10) + 'px';
-      document.body.appendChild(h);
-      setTimeout(()=>h.remove(), 5600);
-    }
-    // subtle hearts occasionally
-    setInterval(() => { if (success.style.display !== 'block') spawnHeart(); }, 900);
-
-    function openModal(){
-      overlay.style.display = 'grid';
-      tcBox.scrollTop = 0;
-      agreeBtn.disabled = true;
-      scrollNote.textContent = "Scroll to the bottom to enable “I Agree”.";
-    }
-
-    function closeModalFn(){
-      overlay.style.display = 'none';
-    }
-
-    function shrinkNoButton(){
-      // shrink + fade the "No" button each attempt
-      const scale = Math.max(0, 1 - noAttempts * 0.15); // 1.00, 0.85, 0.70, ...
-      const opacity = Math.max(0, 1 - noAttempts * 0.18);
-
-      noBtn.style.transform = `scale(${scale})`;
-      noBtn.style.opacity = `${opacity}`;
-
-      // change text progressively
-      const idx = Math.min(noAttempts, noLines.length - 1);
-      hint.textContent = noLines[idx];
-
-      // eventually remove "No"
-      if (scale <= 0.25 || opacity <= 0.15 || noAttempts >= 6){
-        noBtn.disabled = true;
-        noBtn.style.display = 'none';
-        hint.textContent = "The ‘No’ option has been removed for safety reasons.";
-      }
-    }
-
-    // Enable Agree only when scrolled to bottom
-    tcBox.addEventListener('scroll', () => {
-      const nearBottom = tcBox.scrollTop + tcBox.clientHeight >= tcBox.scrollHeight - 6;
-      if (nearBottom){
-        agreeBtn.disabled = false;
-        scrollNote.textContent = "Great. You definitely read all 37 pages 😌";
-      } else {
-        agreeBtn.disabled = true;
-        scrollNote.textContent = "Scroll to the bottom to enable “I Agree”.";
-      }
-    });
-
-    noBtn.addEventListener('click', () => {
-      if (noBtn.disabled) return;
-      openModal();
-    });
-
-    agreeBtn.addEventListener('click', () => {
-      closeModalFn();
-      noAttempts++;
-      shrinkNoButton();
-    });
-
-    closeModal.addEventListener('click', closeModalFn);
-    cancelModal.addEventListener('click', closeModalFn);
-
-    yesBtn.addEventListener('click', () => {
-      subtitle.textContent = "Correct answer detected ✅";
-      success.style.display = 'block';
-      hint.textContent = "";
-      // celebratory hearts burst
-      for(let i=0;i<18;i++) setTimeout(spawnHeart, i*80);
-    });
-
-    // close modal on clicking outside
-    overlay.addEventListener('click', (e) => {
-      if (e.target === overlay) closeModalFn();
-    });
-  </script>
-</body>
-</html>
+   
