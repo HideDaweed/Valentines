@@ -154,4 +154,442 @@
       min-width:auto;
       border-radius:12px;
       cursor:pointer;
-   
+    }
+    .modalBody{
+      padding:14px 16px;
+    }
+    .tcTopRow{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:10px;
+      flex-wrap:wrap;
+    }
+    .badge{
+      font-size:12px;
+      color: rgba(255,255,255,0.75);
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      padding:6px 10px;
+      border-radius:999px;
+    }
+    .progressWrap{
+      flex: 1;
+      min-width: 240px;
+      height: 10px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 999px;
+      overflow:hidden;
+    }
+    .progressBar{
+      height:100%;
+      width:0%;
+      background: rgba(34,197,94,0.9);
+      border-radius:999px;
+      transition: width 0.08s linear;
+    }
+    .tcBox{
+      height: 320px;
+      overflow:auto;
+      padding:12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.04);
+      color: rgba(255,255,255,0.82);
+      font-size: 13.5px;
+      line-height: 1.6;
+    }
+    .tcBox h3{
+      margin: 10px 0 6px;
+      font-size: 14px;
+      color: rgba(255,255,255,0.9);
+    }
+    .tcBox p{ margin: 0 0 10px; color: rgba(255,255,255,0.80); font-size:13.5px; }
+    .modalFooter{
+      display:flex;
+      gap:10px;
+      justify-content:flex-end;
+      padding:14px 16px;
+      border-top:1px solid rgba(255,255,255,0.12);
+    }
+    .secondary{
+      background: rgba(255,255,255,0.10);
+      color: rgba(255,255,255,0.85);
+      border:1px solid rgba(255,255,255,0.14);
+      min-width:auto;
+    }
+    .primary{
+      background: rgba(34,197,94,0.92);
+      color:#05210f;
+      font-weight:900;
+      min-width:auto;
+    }
+    .primary:disabled{
+      opacity:0.5;
+      cursor:not-allowed;
+      filter:grayscale(1);
+    }
+
+    /* hearts */
+    .heart{
+      position:fixed;
+      bottom:-20px;
+      font-size:16px;
+      opacity:0.85;
+      animation: floatUp 5.2s linear forwards;
+      pointer-events:none;
+      filter: drop-shadow(0 8px 10px rgba(0,0,0,0.25));
+    }
+    @keyframes floatUp{
+      from{ transform: translateY(0) translateX(0) scale(1); opacity:0.0; }
+      12%{ opacity:0.85; }
+      to{ transform: translateY(-110vh) translateX(var(--dx)) scale(1.15); opacity:0; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <h1>Will you be my Valentine? 💘</h1>
+    <p id="subtitle">Click <b>Yes</b> or <b>No</b>. (The website has… opinions.)</p>
+
+    <div class="arena" id="arena" aria-label="button arena">
+      <button id="yesBtn">Yes 💚</button>
+      <button id="noBtn">No 😐</button>
+    </div>
+
+    <div class="hint" id="hint"></div>
+
+    <div class="success" id="success">
+      <div style="font-size:18px; margin-bottom:6px;">Correct. ✅🎉</div>
+      <div>You have unlocked: <b>Unlimited hugs</b> + <b>one date of your choice</b>.</div>
+      <div style="margin-top:8px; color: rgba(220,255,235,0.85); font-size:13px;">
+        (Screenshot this as proof 🧾)
+      </div>
+    </div>
+  </div>
+
+  <!-- Terms modal -->
+  <div class="overlay" id="overlay" role="dialog" aria-modal="true">
+    <div class="modal">
+      <div class="modalHeader">
+        <strong>Valentine Terms & Conditions (Warning: extremely long)</strong>
+        <button class="closeX" id="closeModal" aria-label="Close">✕</button>
+      </div>
+
+      <div class="modalBody">
+        <div class="tcTopRow">
+          <span class="badge" id="pageBadge">Pages: 9,842 • Clauses: 0</span>
+          <div class="progressWrap" title="Scroll progress">
+            <div class="progressBar" id="progressBar"></div>
+          </div>
+          <span class="badge" id="progressPct">0%</span>
+        </div>
+
+        <div class="tcBox" id="tcBox">
+          <!-- filled by JS -->
+        </div>
+
+        <p id="scrollNote" style="margin:10px 0 0; font-size:12.5px; color:rgba(255,255,255,0.65);">
+          Scroll to the absolute bottom to enable “I Agree”.
+        </p>
+      </div>
+
+      <div class="modalFooter">
+        <button class="secondary" id="cancelModal">Cancel</button>
+        <button class="primary" id="agreeBtn" disabled>I Agree (I definitely read it)</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const arena = document.getElementById('arena');
+    const yesBtn = document.getElementById('yesBtn');
+    const noBtn = document.getElementById('noBtn');
+    const hint = document.getElementById('hint');
+    const subtitle = document.getElementById('subtitle');
+    const success = document.getElementById('success');
+
+    const overlay = document.getElementById('overlay');
+    const closeModal = document.getElementById('closeModal');
+    const cancelModal = document.getElementById('cancelModal');
+    const agreeBtn = document.getElementById('agreeBtn');
+    const tcBox = document.getElementById('tcBox');
+    const scrollNote = document.getElementById('scrollNote');
+    const progressBar = document.getElementById('progressBar');
+    const progressPct = document.getElementById('progressPct');
+    const pageBadge = document.getElementById('pageBadge');
+
+    // -------------------------
+    // Subtle hearts
+    // -------------------------
+    function spawnHeart(){
+      const h = document.createElement('div');
+      h.className = 'heart';
+      h.textContent = Math.random() > 0.5 ? '💗' : '💘';
+      h.style.left = Math.round(Math.random()*100) + 'vw';
+      h.style.setProperty('--dx', (Math.random()*160 - 80) + 'px');
+      h.style.fontSize = (14 + Math.random()*10) + 'px';
+      document.body.appendChild(h);
+      setTimeout(()=>h.remove(), 5300);
+    }
+    setInterval(() => { if (success.style.display !== 'block') spawnHeart(); }, 900);
+
+    // -------------------------
+    // "No" runs away
+    // -------------------------
+    let escapes = 0;
+    let lastMoveAt = 0;
+
+    const taunts = [
+      "Nice try.",
+      "Nope 🙂",
+      "You almost had it.",
+      "Skill issue.",
+      "Try harder.",
+      "I believe in you. (But also… no.)",
+      "Your cursor is too slow.",
+      "Absolutely not.",
+      "That button has places to be."
+    ];
+
+    function clamp(v, min, max){ return Math.max(min, Math.min(max, v)); }
+
+    function placeNoAt(px, py){
+      // px,py relative to arena top-left (center of button)
+      const rect = arena.getBoundingClientRect();
+      const btnRect = noBtn.getBoundingClientRect();
+
+      const bw = btnRect.width || 150;
+      const bh = btnRect.height || 44;
+
+      // keep it inside arena with margin
+      const margin = 14;
+      const x = clamp(px, margin + bw/2, rect.width - margin - bw/2);
+      const y = clamp(py, margin + bh/2, rect.height - margin - bh/2);
+
+      noBtn.style.left = x + "px";
+      noBtn.style.top  = y + "px";
+      noBtn.style.transform = "translate(-50%,-50%)";
+    }
+
+    function randomPlaceNoFarFrom(cx, cy){
+      const rect = arena.getBoundingClientRect();
+      const attempts = 18;
+      let best = null;
+      for(let i=0;i<attempts;i++){
+        const x = Math.random() * rect.width;
+        const y = Math.random() * rect.height;
+        const dx = x - cx;
+        const dy = y - cy;
+        const dist2 = dx*dx + dy*dy;
+        if(!best || dist2 > best.dist2){
+          best = {x,y,dist2};
+        }
+      }
+      placeNoAt(best.x, best.y);
+    }
+
+    function runAwayFromPointer(clientX, clientY){
+      const now = performance.now();
+      // throttle movement so it doesn't jitter too aggressively
+      if(now - lastMoveAt < 55) return;
+      lastMoveAt = now;
+
+      const rect = arena.getBoundingClientRect();
+      const cx = clientX - rect.left;
+      const cy = clientY - rect.top;
+
+      escapes++;
+      hint.textContent = taunts[escapes % taunts.length];
+
+      randomPlaceNoFarFrom(cx, cy);
+    }
+
+    // Initialize position nicely
+    window.addEventListener('load', () => {
+      const rect = arena.getBoundingClientRect();
+      placeNoAt(rect.width * 0.72, rect.height * 0.62);
+    });
+
+    // Move when cursor gets close (mouseenter + mousemove)
+    arena.addEventListener('mousemove', (e) => {
+      const nb = noBtn.getBoundingClientRect();
+      const dx = (e.clientX - (nb.left + nb.width/2));
+      const dy = (e.clientY - (nb.top + nb.height/2));
+      const dist = Math.hypot(dx, dy);
+
+      // detection radius grows a bit with escapes so it feels more chaotic
+      const radius = 95 + Math.min(120, escapes * 3);
+
+      if(dist < radius){
+        runAwayFromPointer(e.clientX, e.clientY);
+      }
+    });
+
+    // Also run away when hovering directly over the button
+    noBtn.addEventListener('mouseenter', (e) => runAwayFromPointer(e.clientX, e.clientY));
+
+    // Mobile: on touch, move away
+    noBtn.addEventListener('touchstart', (e) => {
+      const t = e.touches[0];
+      runAwayFromPointer(t.clientX, t.clientY);
+      // allow the page to still respond nicely
+      e.preventDefault();
+    }, {passive:false});
+
+    // If she actually clicks No: open T&C
+    noBtn.addEventListener('click', () => {
+      openModal();
+    });
+
+    // -------------------------
+    // Massive Terms & Conditions generator
+    // -------------------------
+    const MAX_SECTIONS = 120;      // "chapters"
+    const CLAUSES_PER_SECTION = 12; // total clauses = 1440 (already feels endless)
+    const EXTRA_FOOTERS = 220;      // extra filler paragraphs
+
+    function sillyClause(section, clause){
+      const s = section + 1;
+      const c = clause + 1;
+
+      const templates = [
+        `Clause ${s}.${c}: “No” is defined as “Yes”, but with additional romantic latency and a mandatory smile.`,
+        `Clause ${s}.${c}: User acknowledges that selecting “No” may trigger a spontaneous date night, at creator’s discretion.`,
+        `Clause ${s}.${c}: Any attempt to deny Valentine status will be treated as comedic performance art.`,
+        `Clause ${s}.${c}: If “No” is selected, the system shall interpret this as “I am joking and I want snacks.”`,
+        `Clause ${s}.${c}: User agrees that the creator is legally permitted to be cute without prior warning.`,
+        `Clause ${s}.${c}: In the event of uncertainty, the default response shall be “Yes”, followed by a hug.`,
+        `Clause ${s}.${c}: All disputes shall be settled by rock-paper-scissors, best of 7, witnessed by at least one heart emoji.`,
+        `Clause ${s}.${c}: The phrase “I’m not sure” shall auto-convert to “Yes, obviously.”`,
+        `Clause ${s}.${c}: User consents to receiving compliments at random intervals, including but not limited to: daily.`,
+        `Clause ${s}.${c}: “No” may be temporarily unavailable due to supply chain constraints and love inflation.`,
+        `Clause ${s}.${c}: Attempting to circumvent these terms will result in immediate escalation to “Forever Valentine.”`,
+        `Clause ${s}.${c}: The “No” option exists for decorative purposes only and is not a real feature.`
+      ];
+
+      // deterministic-ish variety
+      return templates[(section * 7 + clause * 3) % templates.length];
+    }
+
+    function buildTerms(){
+      tcBox.innerHTML = "";
+
+      const intro = document.createElement('p');
+      intro.innerHTML = `<b>Important:</b> You successfully clicked “No”. This triggered the Emergency Compliance Protocol™.
+      To proceed with “No”, you must read <b>every single word</b> below and scroll to the end.`;
+      tcBox.appendChild(intro);
+
+      const warning = document.createElement('p');
+      warning.textContent = "Warning: these Terms & Conditions are unreasonably long, emotionally persuasive, and legally binding in the Court of Love™.";
+      tcBox.appendChild(warning);
+
+      let clauseCount = 0;
+
+      for(let s=0; s<MAX_SECTIONS; s++){
+        const h = document.createElement('h3');
+        h.textContent = `Section ${s+1}: Valentine Governance & Cursor Jurisprudence`;
+        tcBox.appendChild(h);
+
+        for(let c=0; c<CLAUSES_PER_SECTION; c++){
+          const p = document.createElement('p');
+          p.textContent = sillyClause(s, c);
+          tcBox.appendChild(p);
+          clauseCount++;
+        }
+
+        // add occasional "exhibits" to make it feel even longer
+        if(s % 6 === 5){
+          const ex = document.createElement('p');
+          ex.style.opacity = "0.86";
+          ex.textContent = `Exhibit ${Math.floor(s/6)+1}: By continuing, user agrees that hugs are non-refundable and that “No” may be replaced with “Yes” without notice.`;
+          tcBox.appendChild(ex);
+        }
+      }
+
+      // Extra filler paragraphs: it keeps going and going
+      const fillerHead = document.createElement('h3');
+      fillerHead.textContent = "Appendix: Absolutely Necessary Additional Legal Stuff (Do Not Skip)";
+      tcBox.appendChild(fillerHead);
+
+      for(let i=0;i<EXTRA_FOOTERS;i++){
+        const p = document.createElement('p');
+        const n = i + 1;
+        p.textContent =
+          `Appendix A.${n}: User acknowledges that this appendix is essential. ` +
+          `Skipping it may cause: accidental affection, unplanned dinner, and/or saying “yes” out loud. ` +
+          `By reading this sentence (and you did), user confirms intent to be Valentine-adjacent.`;
+        tcBox.appendChild(p);
+        clauseCount++;
+      }
+
+      const end = document.createElement('p');
+      end.innerHTML = `<b>End of Terms.</b> If you reached this, you deserve a medal. You may now press “I Agree” and accept your fate.`;
+      tcBox.appendChild(end);
+
+      pageBadge.textContent = `Pages: 9,842 • Clauses: ${clauseCount.toLocaleString()}`;
+    }
+
+    // -------------------------
+    // Modal controls + scroll gating
+    // -------------------------
+    function openModal(){
+      overlay.style.display = 'grid';
+      agreeBtn.disabled = true;
+      progressBar.style.width = "0%";
+      progressPct.textContent = "0%";
+      scrollNote.textContent = "Scroll to the absolute bottom to enable “I Agree”.";
+      buildTerms();
+      tcBox.scrollTop = 0;
+      hint.textContent = "You clicked No… so now we do paperwork.";
+    }
+
+    function closeModalFn(){
+      overlay.style.display = 'none';
+    }
+
+    function updateProgress(){
+      const maxScroll = tcBox.scrollHeight - tcBox.clientHeight;
+      const pct = maxScroll <= 0 ? 100 : Math.round((tcBox.scrollTop / maxScroll) * 100);
+      progressBar.style.width = pct + "%";
+      progressPct.textContent = pct + "%";
+
+      const nearBottom = tcBox.scrollTop + tcBox.clientHeight >= tcBox.scrollHeight - 4;
+      if(nearBottom){
+        agreeBtn.disabled = false;
+        scrollNote.textContent = "Amazing. You definitely read all of that 😌";
+      } else {
+        agreeBtn.disabled = true;
+      }
+    }
+
+    tcBox.addEventListener('scroll', updateProgress);
+
+    closeModal.addEventListener('click', closeModalFn);
+    cancelModal.addEventListener('click', closeModalFn);
+    overlay.addEventListener('click', (e) => { if(e.target === overlay) closeModalFn(); });
+
+    agreeBtn.addEventListener('click', () => {
+      closeModalFn();
+      // After “agree”, we can make No shrink / disappear to encourage Yes
+      noBtn.style.opacity = "0.35";
+      noBtn.textContent = "No (approved?)";
+      hint.textContent = "Paperwork complete. Your ‘No’ request is now under review for the next 3–5 business years.";
+    });
+
+    // -------------------------
+    // Yes button
+    // -------------------------
+    yesBtn.addEventListener('click', () => {
+      subtitle.textContent = "Correct answer detected ✅";
+      success.style.display = 'block';
+      hint.textContent = "";
+      // celebratory hearts burst
+      for(let i=0;i<22;i++) setTimeout(spawnHeart, i*70);
+    });
+  </script>
+</body>
+</html>
